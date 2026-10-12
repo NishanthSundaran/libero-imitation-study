@@ -1,0 +1,8 @@
+.venv/
+.libero/
+outputs
+scratch/
+__pycache__/
+*.pyc
+wandb/
+.venv-render/
