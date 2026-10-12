@@ -49,6 +49,21 @@ def build_vec_env(env_cfg, suite, suite_name, task_id, episode_index):
     return gym.vector.SyncVectorEnv([make], autoreset_mode=gym.vector.AutoresetMode.NEXT_STEP)
 
 
+def save_mp4(frames, path, fps=20):
+    import av
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with av.open(str(path), "w") as c:
+        stream = c.add_stream("libx264", rate=fps)
+        stream.height, stream.width = frames[0].shape[:2]
+        stream.pix_fmt = "yuv420p"
+        for f in frames:
+            for packet in stream.encode(av.VideoFrame.from_ndarray(np.ascontiguousarray(f), format="rgb24")):
+                c.mux(packet)
+        for packet in stream.encode():
+            c.mux(packet)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--policy", required=True, help="Hub id or local pretrained_model dir")
@@ -63,7 +78,11 @@ def main():
     p.add_argument("--obs-size", type=int, default=360, help="render size; lerobot-eval default is 360")
     p.add_argument("--rename-map", default="{}")
     p.add_argument("--n-action-steps", type=int, default=None)
+    p.add_argument("--temporal-ensemble", type=float, default=None,
+                   help="ACT only: temporal ensembling coefficient (e.g. 0.01); forces n_action_steps=1")
     p.add_argument("--out", required=True)
+    p.add_argument("--video-dir", default=None,
+                   help="save agent-view mp4s of every failure and of the first success per task")
     args = p.parse_args()
 
     rename_map = json.loads(args.rename_map)
@@ -78,6 +97,9 @@ def main():
     policy_cfg.pretrained_path = args.policy
     if args.n_action_steps is not None:
         policy_cfg.n_action_steps = args.n_action_steps
+    if args.temporal_ensemble is not None:
+        policy_cfg.temporal_ensemble_coeff = args.temporal_ensemble
+        policy_cfg.n_action_steps = 1
     policy = make_policy(cfg=policy_cfg, env_cfg=env_cfg, rename_map=rename_map).eval()
     preprocessor, postprocessor = make_pre_post_processors(
         policy_cfg=policy_cfg,
@@ -95,6 +117,7 @@ def main():
     rows = []
 
     for task_id in args.task_ids:
+        saved_success = False
         shared = None
         if args.env_mode == "reuse":
             # Same as lerobot-eval: one env whose init-state counter starts at the first requested
@@ -109,6 +132,8 @@ def main():
             env = shared or build_vec_env(env_cfg, suite, args.suite, task_id, init_state)
             if args.seeds is not None:
                 set_seed(ep_seed)
+            frames = []
+            record = (lambda e: frames.append(e.call("render")[0])) if args.video_dir else None
             t0 = time.time()
             with torch.no_grad():
                 info = rollout(
@@ -116,6 +141,7 @@ def main():
                     env_preprocessor=env_pre, env_postprocessor=env_post,
                     preprocessor=preprocessor, postprocessor=postprocessor,
                     seeds=[ep_seed],
+                    render_callback=record,
                 )
             success = bool(info["success"][0].any())
             done = info["done"][0].numpy()
@@ -123,6 +149,10 @@ def main():
             row = dict(policy=args.policy, suite=args.suite, task_id=task_id, init_state=init_state,
                        env_mode=args.env_mode, episode_in_env=k, seed=ep_seed, reseeded=args.seeds is not None,
                        success=success, steps=steps, wall_s=round(time.time() - t0, 1))
+            if args.video_dir and frames and (not success or not saved_success):
+                tag = "ok" if success else "fail"
+                save_mp4(frames, Path(args.video_dir) / f"t{task_id}_init{init_state}_s{ep_seed}_{tag}.mp4")
+                saved_success |= success
             rows.append(row)
             print(json.dumps(row), flush=True)
             if shared is None:
