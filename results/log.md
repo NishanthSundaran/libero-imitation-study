@@ -49,3 +49,10 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   critically low (3 GPU jobs with 6 dataloader workers each, plus Firefox using ~9 GB).
   Lost: ACT run 1 at step ~20k (only the 10k checkpoint was saved), SmolVLA held-out replan-50 and
   replan-5 runs, ACT temporal-ensembling test.
+* Resumed (2026-10-13 06:38): ACT run 1 from the 10k checkpoint, `--resume=true --num_workers=2`,
+  running alone. Loss at resume 0.143, about 5.6 steps/s, data loading not a bottleneck
+  (data_s 0.016), RAM about 5 GB used. Plan: evaluate 20k, 30k, 40k checkpoints one at a time,
+  256 px, replan every 10, same 50 init states, seed 4000.
+* `tools/summarize.py` (paired comparison + McNemar): replan-10 vs open-loop chunks on the 10k ACT
+  checkpoint, same 50 states: fixed 34, broken 1, p < 0.0001. Remaining failures: init states
+  0, 2, 6, 9, 12, 15, 23, 30, 32, 40, 41, 42 (all time out at 280 steps).
