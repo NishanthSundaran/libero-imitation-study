@@ -56,3 +56,28 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * `tools/summarize.py` (paired comparison + McNemar): replan-10 vs open-loop chunks on the 10k ACT
   checkpoint, same 50 states: fixed 34, broken 1, p < 0.0001. Remaining failures: init states
   0, 2, 6, 9, 12, 15, 23, 30, 32, 40, 41, 42 (all time out at 280 steps).
+
+### Cycle 2 results: ACT task 0, checkpoints (256 px, replan every 10, 50 init states, seed 4000)
+
+| Checkpoint | Train loss | Success |
+| --- | --- | --- |
+| 10k | 0.143 | 38/50 |
+| 20k | 0.094 | 39/50 |
+| 30k | 0.076 | 38/50 |
+| 40k (final, planned) | 0.067 | **50/50** |
+
+* 40k vs 10k paired: fixed 12, broken 0, McNemar exact p = 0.0005. 20k and 30k are not different
+  from 10k (fixed 6 / broken 5, fixed 8 / broken 8): failures move between init states.
+* Verified by video (init states 0, 6, 42, rerun deterministically): grasps the alphabet soup,
+  places it in the basket. 40k was the pre-planned final checkpoint, not picked from the four.
+* Caveat: one task, 44 demos, every official init state used for evaluation, so there is no
+  held-out set of init states for this task.
+
+## Cycle 3: one ACT for all 10 LIBERO-Object tasks (454 demos)
+
+* Check: every task has a different object set (bddl files), so the scene identifies the task
+  without language. Fair comparison with SmolVLA, which is also one model for the suite.
+* Run `act_obj_all_r1`: batch 32, 100k steps (about 47 epochs, task-0 run was 93), lr 1e-5,
+  chunk 50, ckpt every 20k, seed 1000, 2 workers. 2.7 steps/s, about 10 h. GPU 4.6 GB.
+* Planned eval: final checkpoint, 10 tasks x init states 10-19, seed 3000, 256 px, replan 10
+  (same episodes as the SmolVLA held-out 97/100).
