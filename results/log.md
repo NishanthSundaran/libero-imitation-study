@@ -81,3 +81,6 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   chunk 50, ckpt every 20k, seed 1000, 2 workers. 2.7 steps/s, about 10 h. GPU 4.6 GB.
 * Planned eval: final checkpoint, 10 tasks x init states 10-19, seed 3000, 256 px, replan 10
   (same episodes as the SmolVLA held-out 97/100).
+* Multi-task ACT finished 2026-10-14 06:35 (100k steps, loss 0.083, ckpts 20k to 100k).
+  Held-out eval of the 100k checkpoint (10 tasks x init states 10-19, seed 3000) was started and
+  then stopped on request before it finished; no result yet.
