@@ -111,3 +111,8 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   milk carton, or slightly off the small cream cheese box, then hovering until timeout.
 * Next: 100k checkpoint on the dev set; then inference-time precision levers (replan every 5,
   temporal ensembling) on the dev set before any retraining.
+* Inference levers on the 50k checkpoint, dev set (per task in brackets):
+  replan 10: 76/100 (8 6 8 10 9 8 7 3 8 9); replan 5: 71/100 (6 5 8 9 8 7 6 4 9 9), fixed 5 /
+  broken 10, p = 0.30; temporal ensembling 0.01: 45/100 (6 2 7 3 9 4 3 0 4 7), fixed 3 / broken 34,
+  p < 0.0001. Ensembling averages overlapping chunks and blurs the late grasp corrections.
+  Decision: keep replan 10; the next gain has to come from training.
