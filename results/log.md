@@ -100,3 +100,14 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   optimizer state from older checkpoints to save disk.
 * Protocol from here on: dev set = 10 tasks x init states 0-9, seed 2000 (for choosing settings),
   held-out = init states 10-19, seed 3000 (final numbers only). Same episodes as SmolVLA.
+* Laptop suspended 16:50 to 20:00 at step 62k; after resume the training hung and no new process
+  could create a CUDA context ("CUDA unknown error", Xid 31 in the kernel log). Fixed by
+  reloading `nvidia_uvm` (`pkexec sh -c "rmmod nvidia_uvm && modprobe nvidia_uvm"`), resumed from
+  the 50k checkpoint. Training now runs under `systemd-inhibit --what=sleep:idle:handle-lid-switch`.
+* Dev set, 50k checkpoint, replan 10: **76/100** (SmolVLA reference on the same episodes: 94/100).
+  Per task: 8 6 8 10 9 8 7 3 8 9. Task 7 (milk) 3/10, task 1 (cream cheese) 6/10.
+* Videos (task 7 init 2/3/4, task 1 init 3/5): always goes to the correct object, so the scene
+  does identify the task without language. Failures are imprecise grasps: gripper beside the tall
+  milk carton, or slightly off the small cream cheese box, then hovering until timeout.
+* Next: 100k checkpoint on the dev set; then inference-time precision levers (replan every 5,
+  temporal ensembling) on the dev set before any retraining.
