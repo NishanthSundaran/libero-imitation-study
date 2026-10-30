@@ -84,3 +84,19 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Multi-task ACT finished 2026-10-14 06:35 (100k steps, loss 0.083, ckpts 20k to 100k).
   Held-out eval of the 100k checkpoint (10 tasks x init states 10-19, seed 3000) was started and
   then stopped on request before it finished; no result yet.
+
+## Data loss and restart (2026-10-30)
+
+* All checkpoints and the dataset cache on the Acer NTFS partition were gone. `hiberfil.sys` has
+  the `HIBR` signature: Windows was hibernated (Fast Startup) while Linux wrote to the partition,
+  so Windows' resume discarded the Linux-written files. Eval JSONs, code and log were in git on
+  the Linux disk and are intact. Data now lives in `~/ml_data` (dataset is only 1.9 GB).
+* Lost: ACT task-0 checkpoints, multi-task ACT run 1 (never evaluated).
+
+## Cycle 3 (restart): one ACT for all 10 LIBERO-Object tasks
+
+* Run `act_obj_all_r2`: same recipe as run 1 (batch 32, 100k steps, lr 1e-5, chunk 50, seed 1000)
+  plus `use_amp=true`: 3.5 steps/s instead of 2.45. Ckpt every 25k; `tools/prune_ckpts.sh` drops
+  optimizer state from older checkpoints to save disk.
+* Protocol from here on: dev set = 10 tasks x init states 0-9, seed 2000 (for choosing settings),
+  held-out = init states 10-19, seed 3000 (final numbers only). Same episodes as SmolVLA.

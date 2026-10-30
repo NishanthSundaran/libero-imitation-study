@@ -38,6 +38,36 @@ What explains the gap, tested one variable at a time with `tools/eval_libero.py`
 On the 20-state grid, every episode solved under 3.8.1 is also solved under 3.3.2 (9/20 to 16/20).
 A 24 point gap to the published 96 % remains.
 
+## Fixing the remaining gap: open-loop action chunks
+
+Rollout videos of the failures show the arm reaching the target but missing the grasp, then
+carrying on with the place motion. The checkpoint executes all 50 actions of a predicted chunk
+(2.5 s) before looking again. Replanning every 10 actions (`n_action_steps=10`, inference only,
+same weights):
+
+| SmolVLA reference, MuJoCo 3.3.2 | Open-loop 50 | Replan every 10 |
+| --- | --- | --- |
+| 10 tasks x init states 0-9, seed 2000 | 78/100 | **94/100** (20 fixed, 4 broken, McNemar p = 0.0015) |
+| Held-out: init states 10-19, seed 3000 | | **97/100** (published: 96 %) |
+
+The replanning interval was chosen on the first sample and then confirmed on the held-out one.
+
+## ACT, single task (alphabet soup, 44 demos)
+
+| Setting (all 50 official init states, seed 4000) | Success |
+| --- | --- |
+| 10k steps, simulator renders 360 px | 0/50 |
+| 10k steps, 256 px (as in training) | 5/50 |
+| 10k steps, 256 px, replan every 10 | 38/50 |
+| 40k steps (final), 256 px, replan every 10 | **50/50** |
+
+* ACT has no internal resize, so a 360 px render gives a different feature map than the 256 px
+  training frames. Open-loop predictions on dataset frames were close to the recorded actions,
+  which pointed at the input rather than training (`tools/diagnose_policy.py`).
+* Replanning matters even more for ACT than for SmolVLA (fixed 34, broken 1).
+* Intermediate checkpoints (20k: 39/50, 30k: 38/50) are no better than 10k; only the final one is.
+* Limitation: one task, and all 50 official init states were used, so no held-out states remain.
+
 ## Setup findings worth knowing
 
 * **Camera orientation.** LIBERO renders images rotated 180 degrees relative to the dataset. LeRobot's
