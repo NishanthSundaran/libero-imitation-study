@@ -139,3 +139,25 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   states 3, 4, 6 fail at both 100k and 150k.
 * Plan for cycle 5: average the weights of the 100k to 200k checkpoints (no retraining) to remove
   checkpoint-to-checkpoint noise; compare on dev against the single 200k checkpoint.
+
+### Cycle 4/5 results (dev set, replan 10)
+
+| Model | Train loss | Dev | Per task 0..9 | vs 100k |
+| --- | --- | --- | --- | --- |
+| 100k | 0.088 | **89** | 10 8 10 10 8 10 9 7 8 9 | |
+| 150k | 0.078 | 82 | 10 9 10 9 9 7 7 7 7 7 | fixed 4, broken 11, p = 0.12 |
+| 200k | 0.068 | 83 | 9 10 9 7 6 8 8 9 10 7 | fixed 7, broken 13, p = 0.26 |
+| mean of 100k..200k weights | | 83 | 10 8 9 9 6 7 9 8 8 9 | fixed 6, broken 12, p = 0.24 |
+
+* Plateau after 100k: true rate about 85 %, 100 dev episodes give a standard error of about 3.5
+  points, so 89 is probably a favourable draw. Lower loss without better success: fitting the
+  demos more closely, not generalising better to new object positions. Weight averaging no gain.
+* Decision: keep 100k as the pick (chosen on dev) and record its held-out number. Next lever
+  targets generalisation: image augmentation.
+
+## Cycle 6: multi-task ACT with image augmentation
+
+* Run `act_obj_all_aug_r1`: identical to run 2 (AMP, batch 32, 100k steps, seed 1000) plus
+  `--dataset.image_transforms.enable=true` (LeRobot defaults: up to 3 of brightness, contrast,
+  saturation, hue, sharpness, affine +-5 deg / 5 % shift). data_s 0.02 vs updt_s 0.29: no loader
+  bottleneck.
