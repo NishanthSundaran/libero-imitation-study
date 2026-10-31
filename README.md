@@ -4,7 +4,19 @@ How much do demonstrations matter, and how do a vision-language-action model (Sm
 classic imitation-learning policies (ACT, Diffusion Policy) compare when trained on the same LIBERO data?
 Everything runs on a single 6 GB laptop GPU (RTX 3060 Laptop) plus free cloud GPUs for the VLA fine-tune.
 
-Status: work in progress. Numbers below are only what has been measured so far.
+Status: work in progress (Diffusion Policy and the demo-count study are next). Every number below was measured.
+
+## Headline result (LIBERO-Object, 100 held-out episodes)
+
+| Policy | Params | Trained by | Held-out success |
+| --- | --- | --- | --- |
+| SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 97/100 |
+| ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 78/100 |
+| **ACT, same + image augmentation** | 52M | this repo, 454 demos | **97/100** |
+
+Held-out = 10 tasks x official init states 10-19, seed 3000, never used for any decision.
+Settings were chosen on a separate dev set (init states 0-9, seed 2000). ACT vs SmolVLA paired:
+3 episodes better, 3 worse (McNemar p = 1.0). Augmentation vs none: 21 fixed, 2 broken (p = 0.0001).
 
 ## Before trusting any number: reproducing a published result
 
@@ -67,6 +79,26 @@ The replanning interval was chosen on the first sample and then confirmed on the
 * Replanning matters even more for ACT than for SmolVLA (fixed 34, broken 1).
 * Intermediate checkpoints (20k: 39/50, 30k: 38/50) are no better than 10k; only the final one is.
 * Limitation: one task, and all 50 official init states were used, so no held-out states remain.
+
+## ACT, one model for all 10 tasks (454 demos)
+
+ACT gets no language input; every LIBERO-Object task has a different object set, so the scene
+identifies the task (checked in the bddl files, and confirmed in videos: it always goes for the
+correct object). Dev set, replan every 10:
+
+| Change (one at a time) | Dev success |
+| --- | --- |
+| 50k / 75k / 100k steps | 76 / 85 / 89 |
+| replan every 5 instead of 10 (50k) | 71 (no gain) |
+| ACT temporal ensembling 0.01 (50k) | 45 (worse: blurs late grasp corrections) |
+| 150k / 200k steps | 82 / 83 (plateau; loss still falls) |
+| mean of 100k..200k weights | 83 (no gain) |
+| **image augmentation** (LeRobot defaults: colour jitter, +-5 deg, 5 % shift), 50k / 75k / 100k | **96 / 95 / 93** |
+
+Failures without augmentation were imprecise grasps on tall objects (milk carton, ketchup bottle):
+gripper beside the carton, bottle released next to the basket or knocked over. Lower training loss
+without better success pointed to overfitting exact pixel positions, which augmentation addresses.
+Side-by-side videos: `results/videos/`.
 
 ## Setup findings worth knowing
 

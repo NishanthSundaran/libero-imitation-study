@@ -175,3 +175,10 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   Note: the ketchup check used one held-out episode that was already inspected above.
 * Interpretation: the earlier failures were overfitting to exact pixel positions; small random
   shifts/rotations and colour jitter make the grasp generalise to new object placements.
+* Augmentation run finished (100k, loss 0.114). Dev: 50k 96, 75k 95, 100k 93 (per task 75k:
+  10 10 10 9 10 7 10 10 10 9; 100k: 10 9 10 8 10 7 9 10 10 10). The automatic pick compared only
+  75k and 100k (50k had been evaluated separately); all three are within dev noise.
+* **Held-out, augmentation 75k: 97/100** (per task 10 10 10 9 10 9 9 10 10 10).
+  vs SmolVLA reference (97/100): fixed 3, broken 3, p = 1.0, a tie with a model about 9x smaller.
+  vs no-augmentation ACT 100k (78/100): fixed 21, broken 2, p = 0.0001.
+  Remaining failures (3,17), (5,14), (6,15) are on three different tasks.
