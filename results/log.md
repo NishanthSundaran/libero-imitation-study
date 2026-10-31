@@ -133,3 +133,9 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 
 * Resume from 100k with `--steps=200000` (resumed at loss 0.088). Ckpts 125k/150k/175k/200k.
 * Then dev eval of 150k and 200k, pick on dev, final number on held-out.
+* 150k, dev: **82/100** (per task 10 9 10 9 9 7 7 7 7 7). vs 100k: fixed 4, broken 11, p = 0.12.
+  Train loss keeps falling (0.078 at 136k) but success between neighbouring checkpoints swings by
+  about 7 points (task-0 ACT showed the same: 38, 39, 38, 50). Persistent failures: task 7 init
+  states 3, 4, 6 fail at both 100k and 150k.
+* Plan for cycle 5: average the weights of the 100k to 200k checkpoints (no retraining) to remove
+  checkpoint-to-checkpoint noise; compare on dev against the single 200k checkpoint.
