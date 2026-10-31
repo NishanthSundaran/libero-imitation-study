@@ -116,3 +116,20 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   broken 10, p = 0.30; temporal ensembling 0.01: 45/100 (6 2 7 3 9 4 3 0 4 7), fixed 3 / broken 34,
   p < 0.0001. Ensembling averages overlapping chunks and blurs the late grasp corrections.
   Decision: keep replan 10; the next gain has to come from training.
+
+### Cycle 3 results: multi-task ACT, dev set (10 tasks x init 0-9, seed 2000, 256 px, replan 10)
+
+| Checkpoint | Train loss | Dev success | Per task 0..9 |
+| --- | --- | --- | --- |
+| 50k | 0.115 | 76/100 | 8 6 8 10 9 8 7 3 8 9 |
+| 75k | | 85/100 | 8 8 9 9 7 7 10 7 10 10 |
+| 100k | 0.088 | **89/100** | 10 8 10 10 8 10 9 7 8 9 |
+
+* 100k vs 50k: fixed 18, broken 5, McNemar p = 0.011. SmolVLA reference on the same 100: 94.
+* Still improving with training; 100k steps = 48 epochs, while the single-task ACT needed 93
+  epochs for 50/50. ACT uses a constant lr, so extending the run equals training longer.
+
+## Cycle 4: extend multi-task ACT to 200k steps (about 95 epochs)
+
+* Resume from 100k with `--steps=200000` (resumed at loss 0.088). Ckpts 125k/150k/175k/200k.
+* Then dev eval of 150k and 200k, pick on dev, final number on held-out.
