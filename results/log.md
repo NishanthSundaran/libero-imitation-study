@@ -161,3 +161,9 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   `--dataset.image_transforms.enable=true` (LeRobot defaults: up to 3 of brightness, contrast,
   saturation, hue, sharpness, affine +-5 deg / 5 % shift). data_s 0.02 vs updt_s 0.29: no loader
   bottleneck.
+* **Held-out, 100k checkpoint (picked on dev): 78/100** (per task 9 9 7 10 4 8 9 6 8 8).
+  SmolVLA on the same 100: 97/100; paired fixed 1, broken 20, p < 0.0001. Dev 89 was optimistic
+  (selection among checkpoints plus a favourable draw). Init states (0,14) and (8,10) fail for both.
+* Videos, task 4 (ketchup) held-out init 10/11: (10) grasps and carries the bottle but releases
+  it short, bottle ends up standing next to the basket; (11) knocks the bottle over on approach,
+  no recovery. Tall, tippable objects (ketchup, milk) are the weak spot.
