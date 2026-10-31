@@ -167,3 +167,11 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Videos, task 4 (ketchup) held-out init 10/11: (10) grasps and carries the bottle but releases
   it short, bottle ends up standing next to the basket; (11) knocks the bottle over on approach,
   no recovery. Tall, tippable objects (ketchup, milk) are the weak spot.
+* **Augmentation, 50k checkpoint, dev: 96/100** (per task 8 10 10 10 10 8 10 10 10 10).
+  vs no-augmentation 50k (76/100): fixed 23, broken 3, McNemar p = 0.0001. SmolVLA on the same
+  dev episodes: 94/100. Train loss is higher with augmentation (0.158 vs 0.107 at 61k).
+* Videos: milk (dev init 3, failed at every no-aug checkpoint) and ketchup (held-out init 10,
+  failed before by releasing next to the basket) are now grasped and placed in the basket.
+  Note: the ketchup check used one held-out episode that was already inspected above.
+* Interpretation: the earlier failures were overfitting to exact pixel positions; small random
+  shifts/rotations and colour jitter make the grasp generalise to new object placements.
