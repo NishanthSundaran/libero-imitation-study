@@ -215,3 +215,12 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   - task 8 init 11: knocks a tall bottle over, then wanders near it.
   Same failure class as ACT and SmolVLA: tall bottles, grasp robustness. No recovery behaviour after a
   missed grasp (demos never contain a retry), which explains the hovering.
+
+## Cycle 8: demo-count study (ACT + augmentation, 10 and 20 demos per task)
+
+* All three policies tie at 97/100 on held-out with ~45 demos per task, so the full-data benchmark no
+  longer separates them. Next question: how much data does the winning recipe need?
+* Same config as `act_obj_all_aug_r1` (via its train_config.json), only the episodes change: nested
+  random subsets of 10 and 20 demos per task (`tools/demo_subset.py`, seed 0). 50k steps each.
+  Dev at 25k and 50k, pick by best dev (ties to the earliest), held-out once on the pick.
+  Runner: `scripts/demo_count_study.sh 10 20`.
