@@ -45,7 +45,7 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   object, grasp misses, lifts and re-approaches until timeout (same open-loop chunk issue as SmolVLA).
 * Testing: replan every 10 actions vs ACT temporal ensembling (coeff 0.01).
 * Replan every 10 actions, same 10k checkpoint, 256 px, same 50 states: **38/50 (76 %)**.
-* Interrupted (2026-10-13): Claude Code stopped all background jobs because system RAM ran
+* Interrupted (2026-10-13): all background jobs were stopped because system RAM ran
   critically low (3 GPU jobs with 6 dataloader workers each, plus Firefox using ~9 GB).
   Lost: ACT run 1 at step ~20k (only the 10k checkpoint was saved), SmolVLA held-out replan-50 and
   replan-5 runs, ACT temporal-ensembling test.
