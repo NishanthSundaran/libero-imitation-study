@@ -200,3 +200,7 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Smoke test: 1.9 GB GPU, evaluator works with n_obs_steps 2 (24.5 s per 280-step episode).
 * Full run `dp_obj_all_aug_r1`: 3.4 steps/s (data_s 0.15 vs updt_s 0.14), about 8 h.
 * Plan: dev eval of 50k, 75k, 100k; held-out on the dev pick.
+* 50k dev: **100/100** (ACT + aug 50k: 96/100; paired: DP fixes 4, breaks 0, McNemar p = 0.125, so
+  not yet significant). Mean steps when solved 128 (ACT 135), max 164 (ACT 279). The four ACT failures
+  (task 0 init 6, 7; task 5 init 3, 5) were re-rendered with DP at obs 256: all four succeed, and the
+  frames show a clean grasp, carry and release into the basket.
