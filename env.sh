@@ -11,7 +11,7 @@ export ML_DATA="${ML_DATA:-$HOME/ml_data}"
 export HF_HOME="$ML_DATA/huggingface"
 if [ ! -d "$ML_DATA/" ]; then
   echo "WARNING: $ML_DATA not available; mount the data drive (open it in Files) first" >&2
-elif [ "$(head -c4 /media/prapanch/Acer/hiberfil.sys 2>/dev/null)" = "HIBR" ]; then
+elif [ "$(head -c4 "$(findmnt -no TARGET -T "$ML_DATA/" 2>/dev/null)/hiberfil.sys" 2>/dev/null)" = "HIBR" ]; then
   echo "WARNING: Windows is hibernated; do not write to the data drive" >&2
 else
   mkdir -p "$ML_DATA/outputs" "$HF_HOME"
