@@ -182,3 +182,9 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   vs SmolVLA reference (97/100): fixed 3, broken 3, p = 1.0, a tie with a model about 9x smaller.
   vs no-augmentation ACT 100k (78/100): fixed 21, broken 2, p = 0.0001.
   Remaining failures (3,17), (5,14), (6,15) are on three different tasks.
+
+## Storage (2026-11-01)
+
+* Windows hibernation turned off by the user (`powercfg /h off`; `hiberfil.sys` gone). Data moved
+  back to the NTFS drive (`~/ml_data` is now a symlink to it, copy verified with `diff -r`).
+  `env.sh` warns if the drive is missing or Windows is hibernated again.
