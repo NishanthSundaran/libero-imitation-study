@@ -224,3 +224,9 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   random subsets of 10 and 20 demos per task (`tools/demo_subset.py`, seed 0). 50k steps each.
   Dev at 25k and 50k, pick by best dev (ties to the earliest), held-out once on the pick.
   Runner: `scripts/demo_count_study.sh 10 20`.
+* Protocol slip found (2026-11-01): the DP held-out run above used `--seed 3000` (one seed at start)
+  instead of `--seeds 3000` (re-seed every episode), which ACT and SmolVLA used. Same init states,
+  so 97/100 is a valid score, but its pairing with ACT/SmolVLA was not on identical episodes. Re-running
+  with `--seeds 3000`; that result replaces this one. The same slip was fixed in the study runner
+  before it started. Also: the watcher queued for the 75k/100k dev runs matched its own command line
+  and never fired; re-queued as a script file.

@@ -13,7 +13,7 @@ INHIBIT="systemd-inhibit --what=sleep:idle:handle-lid-switch --who=libero-study 
 ev() {  # ev <ckpt dir> <out json> <init states...> -- seed
   local ck=$1 out=$2 seed=$3; shift 3
   $INHIBIT python -I tools/eval_libero.py --policy "$ck/pretrained_model" --init-states "$@" \
-    --seed "$seed" --obs-size 256 --n-action-steps 10 --out "$out" > "outputs/$(basename "${out%.json}").log" 2>&1
+    --seeds "$seed" --obs-size 256 --n-action-steps 10 --out "$out" > "outputs/$(basename "${out%.json}").log" 2>&1
 }
 
 for N in "$@"; do
