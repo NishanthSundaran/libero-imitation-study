@@ -204,3 +204,6 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   not yet significant). Mean steps when solved 128 (ACT 135), max 164 (ACT 279). The four ACT failures
   (task 0 init 6, 7; task 5 init 3, 5) were re-rendered with DP at obs 256: all four succeed, and the
   frames show a clean grasp, carry and release into the basket.
+* Selection rule, fixed before 75k/100k are scored: best dev score, ties go to the earliest checkpoint.
+  A later checkpoint can at best tie 100/100, so 50k is the pick and goes to held-out now; 75k and
+  100k dev runs are a stability check only.
