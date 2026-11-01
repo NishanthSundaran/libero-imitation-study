@@ -4,7 +4,12 @@ How much do demonstrations matter, and how do a vision-language-action model (Sm
 classic imitation-learning policies (ACT, Diffusion Policy) compare when trained on the same LIBERO data?
 Everything runs on a single 6 GB laptop GPU (RTX 3060 Laptop) plus free cloud GPUs for the VLA fine-tune.
 
-Status: work in progress (Diffusion Policy and the demo-count study are next). Every number below was measured.
+Status: work in progress (the demo-count study is running). Every number below was measured.
+
+![SmolVLA, ACT and Diffusion Policy on the same held-out episode](results/gifs/three_policies_tomato_sauce.gif)
+
+*The same held-out episode (tomato sauce, init state 10, seed 3000) run by all three policies.
+All three finish in 116 to 126 steps.*
 
 ## Headline result (LIBERO-Object, 100 held-out episodes)
 
@@ -21,6 +26,17 @@ Settings were chosen on a separate dev set (init states 0-9, seed 2000). ACT vs 
 Diffusion Policy scored 100/100 on dev, but on held-out it is 3 better and 3 worse than both ACT and
 SmolVLA (p = 1.0): the three are statistically indistinguishable here. All three models' held-out
 failures are tall bottles (a grasp that slips, an empty grasp, a bottle knocked over).
+
+## Rollouts
+
+| One Diffusion Policy model, four different tasks (held-out) | What image augmentation fixed (ACT, same dev episode) |
+| --- | --- |
+| ![Diffusion Policy on four tasks](results/gifs/diffusion_policy_four_tasks.gif) | ![ACT without vs with augmentation](results/gifs/augmentation_milk.gif) |
+
+Left: alphabet soup, bbq sauce, ketchup and milk, each placed in the basket by the same policy; the
+scene, not a language prompt, tells it which object to pick. Right: without augmentation ACT hovers
+beside the milk carton until timeout; with augmentation it grasps and places it. More clips, including
+failures, are in [results/videos](results/videos).
 
 ## Before trusting any number: reproducing a published result
 
