@@ -230,3 +230,11 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   with `--seeds 3000`; that result replaces this one. The same slip was fixed in the study runner
   before it started. Also: the watcher queued for the 75k/100k dev runs matched its own command line
   and never fired; re-queued as a script file.
+* Re-run with `--seeds 3000` (per-episode re-seeding, as ACT/SmolVLA): **85/100**. Task 3 (bbq sauce)
+  fails 8 of 10; videos show real misses (gripper closes beside the bottle, or tips it over).
+  vs ACT + aug: 2 fixed, 14 broken (p = 0.0042). Dev: 75k 100/100, 100k 99/100 (stable).
+* Why 97 vs 85 on the same init states: Diffusion Policy samples noise at inference, so with
+  re-seeding each episode replays one noise sequence; a bad draw can hit many episodes of one task.
+  ACT is deterministic at inference (zero latent), so one seed suffices for it but not for DP or
+  SmolVLA (flow matching). Next: held-out with seeds 3001 and 3002 for all three policies, then the
+  headline reports the mean over three seeds (300 episodes each).
