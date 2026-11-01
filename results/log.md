@@ -238,3 +238,11 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   ACT is deterministic at inference (zero latent), so one seed suffices for it but not for DP or
   SmolVLA (flow matching). Next: held-out with seeds 3001 and 3002 for all three policies, then the
   headline reports the mean over three seeds (300 episodes each).
+* Held-out with seeds 3001 and 3002 for all three policies (same per-episode re-seeding).
+  Totals over seeds 3000-3002 (300 episodes each): ACT + aug 295 (97/99/99), SmolVLA 283 (97/93/93),
+  Diffusion Policy 279 (85/96/98). Paired McNemar on 300: ACT vs DP 20 vs 4 (p = 0.0015), ACT vs
+  SmolVLA 17 vs 5 (p = 0.017, borderline after Bonferroni for 3 tests), DP vs SmolVLA 15 vs 19 (p = 0.61).
+  DP per task: bbq sauce 20/30 is its weak spot (every other task >= 27/30).
+  Conclusion: the README headline now reports three seeds; ACT + augmentation is the best policy here.
+* Follow-up idea for DP (after the demo-count study): more denoising steps (DDIM 10 -> 50) or
+  larger n_obs_steps, judged on dev with several seeds since DP is stochastic.

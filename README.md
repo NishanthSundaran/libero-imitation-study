@@ -11,21 +11,42 @@ Status: work in progress (the demo-count study is running). Every number below w
 *The same held-out episode (tomato sauce, init state 10, seed 3000) run by all three policies.
 All three finish in 116 to 126 steps.*
 
-## Headline result (LIBERO-Object, 100 held-out episodes)
+## Headline result (LIBERO-Object, 300 held-out episodes)
 
-| Policy | Params | Trained by | Held-out success |
+| Policy | Params | Trained by | Seed 3000 | Seed 3001 | Seed 3002 | **Total** |
+| --- | --- | --- | --- | --- | --- | --- |
+| SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 97 | 93 | 93 | 283/300 (94.3 %) |
+| ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 78 | | | 78/100 |
+| **ACT, same + image augmentation** | 52M | this repo, 454 demos | 97 | 99 | 99 | **295/300 (98.3 %)** |
+| Diffusion Policy, same data + augmentation | 89M | this repo, 454 demos | 85 | 96 | 98 | 279/300 (93.0 %) |
+
+Held-out = 10 tasks x official init states 10-19, each run once per seed with every random
+generator re-seeded before the episode, so each (task, init state, seed) is the same episode for
+every policy. Never used for any decision: checkpoints and settings were chosen on a separate dev set
+(init states 0-9, seed 2000).
+
+Paired McNemar tests on the 300 shared episodes:
+
+| Comparison | First better | Second better | p |
 | --- | --- | --- | --- |
-| SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 97/100 |
-| ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 78/100 |
-| **ACT, same + image augmentation** | 52M | this repo, 454 demos | **97/100** |
-| **Diffusion Policy, same data + augmentation** | 89M | this repo, 454 demos | **97/100** |
+| ACT + aug vs Diffusion Policy | 20 | 4 | 0.0015 |
+| ACT + aug vs SmolVLA | 17 | 5 | 0.017 |
+| Diffusion Policy vs SmolVLA | 15 | 19 | 0.61 |
+| ACT + aug vs ACT without augmentation (seed 3000 only) | 21 | 2 | 0.0001 |
 
-Held-out = 10 tasks x official init states 10-19, seed 3000, never used for any decision.
-Settings were chosen on a separate dev set (init states 0-9, seed 2000). ACT vs SmolVLA paired:
-3 episodes better, 3 worse (McNemar p = 1.0). Augmentation vs none: 21 fixed, 2 broken (p = 0.0001).
-Diffusion Policy scored 100/100 on dev, but on held-out it is 3 better and 3 worse than both ACT and
-SmolVLA (p = 1.0): the three are statistically indistinguishable here. All three models' held-out
-failures are tall bottles (a grasp that slips, an empty grasp, a bottle knocked over).
+So the 52M ACT model trained here is the most reliable of the three. ACT vs SmolVLA is significant on
+its own but borderline once corrected for three comparisons (Bonferroni threshold 0.0167); Diffusion
+Policy and SmolVLA cannot be told apart.
+
+**Why three seeds.** Diffusion Policy and SmolVLA sample noise at inference; ACT does not (it uses
+the zero latent). With one seed, a single unlucky noise draw is repeated across episodes: Diffusion
+Policy scored 85/100 at seed 3000 (bbq sauce 2/10) and 96 and 98 at the other two seeds. A first
+Diffusion Policy run that seeded only once at the start reported 97/100; that run was off protocol
+and is superseded by this table ([log](results/log.md)).
+
+Where they fail: almost always tall bottles (bbq sauce, salad dressing, ketchup), as an empty grasp,
+a bottle that slips out after lifting, or a bottle knocked over. None of the policies retries after a
+missed grasp; the demonstrations never show one.
 
 ## Rollouts
 
