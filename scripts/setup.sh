@@ -10,7 +10,7 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5   # egl-probe (robomimic dep) fails to c
 
 uv python install 3.12                    # lerobot 0.6.x requires Python >= 3.12
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python "lerobot[libero,smolvla]==0.6.1"
+uv pip install --python .venv/bin/python "lerobot[libero,smolvla,diffusion]==0.6.1"
 
 # The default PyPI torch wheel targets CUDA 13 and needs driver >= 580.
 # Driver 535 supports CUDA 12.x, so swap to the cu128 build of the same version.

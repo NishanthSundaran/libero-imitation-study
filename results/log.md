@@ -188,3 +188,15 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Windows hibernation turned off by the user (`powercfg /h off`; `hiberfil.sys` gone). Data moved
   back to the NTFS drive (`~/ml_data` is now a symlink to it, copy verified with `diff -r`).
   `env.sh` warns if the drive is missing or Windows is hibernated again.
+
+## Cycle 7: Diffusion Policy, one model for all 10 LIBERO-Object tasks
+
+* Installed the `diffusion` extra (adds only diffusers 0.39.0 + importlib-metadata; torch/mujoco unchanged).
+* LeRobot defaults (horizon 64, no resize, 278M params) run out of memory on 6 GB. Settings follow
+  the Diffusion Policy paper instead: n_obs_steps 2, horizon 16, n_action_steps 8, resize 128 px +
+  random crop 0.9, U-Net down_dims (256, 512, 1024) = 89M params, DDIM with 10 inference steps,
+  lr 1e-4 cosine. Same data, batch 32, 100k steps, AMP, seed 1000, and the same LeRobot image
+  augmentation as the winning ACT run. 4 dataloader workers (2 frames x 2 cameras per sample).
+* Smoke test: 1.9 GB GPU, evaluator works with n_obs_steps 2 (24.5 s per 280-step episode).
+* Full run `dp_obj_all_aug_r1`: 3.4 steps/s (data_s 0.15 vs updt_s 0.14), about 8 h.
+* Plan: dev eval of 50k, 75k, 100k; held-out on the dev pick.
