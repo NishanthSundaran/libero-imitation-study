@@ -13,10 +13,14 @@ Status: work in progress (Diffusion Policy and the demo-count study are next). E
 | SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 97/100 |
 | ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 78/100 |
 | **ACT, same + image augmentation** | 52M | this repo, 454 demos | **97/100** |
+| **Diffusion Policy, same data + augmentation** | 89M | this repo, 454 demos | **97/100** |
 
 Held-out = 10 tasks x official init states 10-19, seed 3000, never used for any decision.
 Settings were chosen on a separate dev set (init states 0-9, seed 2000). ACT vs SmolVLA paired:
 3 episodes better, 3 worse (McNemar p = 1.0). Augmentation vs none: 21 fixed, 2 broken (p = 0.0001).
+Diffusion Policy scored 100/100 on dev, but on held-out it is 3 better and 3 worse than both ACT and
+SmolVLA (p = 1.0): the three are statistically indistinguishable here. All three models' held-out
+failures are tall bottles (a grasp that slips, an empty grasp, a bottle knocked over).
 
 ## Before trusting any number: reproducing a published result
 

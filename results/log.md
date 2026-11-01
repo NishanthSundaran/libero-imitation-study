@@ -207,3 +207,11 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Selection rule, fixed before 75k/100k are scored: best dev score, ties go to the earliest checkpoint.
   A later checkpoint can at best tie 100/100, so 50k is the pick and goes to held-out now; 75k and
   100k dev runs are a stability check only.
+* Held-out 50k: **97/100**. vs ACT + aug (97): 3 fixed, 3 broken, p = 1.0. vs SmolVLA (97): 3 fixed,
+  3 broken, p = 1.0. Three-way tie; dev 100/100 was partly luck of the dev draw.
+* Failures, from the videos (all three are 280-step timeouts):
+  - task 2 init 12: lifts the salad dressing bottle, it slips out, the arm carries nothing to the basket and hovers.
+  - task 3 init 15: grasp closes beside the tall bottle (empty), arm goes to the basket and hovers.
+  - task 8 init 11: knocks a tall bottle over, then wanders near it.
+  Same failure class as ACT and SmolVLA: tall bottles, grasp robustness. No recovery behaviour after a
+  missed grasp (demos never contain a retry), which explains the hovering.
