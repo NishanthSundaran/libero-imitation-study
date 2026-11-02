@@ -9,7 +9,7 @@ Every number below was measured.
 ![SmolVLA, ACT and Diffusion Policy on the same held-out episode](results/gifs/three_policies_tomato_sauce.gif)
 
 *The same held-out episode (tomato sauce, init state 10, seed 3000) run by all three policies.
-All three finish in 116 to 126 steps.*
+All three succeed, in about 120 steps.*
 
 A study guide explaining the methods, evaluation and results: [docs/LIBERO_Imitation_Study_Guide.pdf](docs/LIBERO_Imitation_Study_Guide.pdf).
 
@@ -17,38 +17,54 @@ A study guide explaining the methods, evaluation and results: [docs/LIBERO_Imita
 
 | Policy | Params | Trained by | Seed 3000 | Seed 3001 | Seed 3002 | **Total** |
 | --- | --- | --- | --- | --- | --- | --- |
-| SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 97 | 93 | 93 | 283/300 (94.3 %) |
-| ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 78 | | | 78/100 |
-| **ACT, same + image augmentation** | 52M | this repo, 454 demos | 97 | 99 | 99 | **295/300 (98.3 %)** |
-| Diffusion Policy, same data + augmentation | 89M | this repo, 454 demos | 85 | 96 | 98 | 279/300 (93.0 %) |
+| SmolVLA (`lerobot/smolvla_libero`), replan every 10 | 450M | published checkpoint | 93 | 92 | 92 | 277/300 (92.3 %) |
+| ACT, one model for all 10 tasks, no augmentation | 52M | this repo, 454 demos | 74 | | | 74/100 |
+| **ACT, same + image augmentation** | 52M | this repo, 454 demos | 99 | 99 | 99 | **297/300 (99.0 %)** |
+| Diffusion Policy, same data + augmentation | 89M | this repo, 454 demos | 81 | 96 | 99 | 276/300 (92.0 %) |
 
 Held-out = 10 tasks x official init states 10-19, each run once per seed with every random
 generator re-seeded before the episode, so each (task, init state, seed) is the same episode for
 every policy. Never used for any decision: checkpoints and settings were chosen on a separate dev set
-(init states 0-9, seed 2000).
+(init states 0-9, seed 2000). Per-episode results: `results/eval/final/`, produced by
+`scripts/final_heldout.sh` in deterministic mode (see below); repeat runs match episode for episode.
 
 Paired McNemar tests on the 300 shared episodes:
 
 | Comparison | First better | Second better | p |
 | --- | --- | --- | --- |
-| ACT + aug vs Diffusion Policy | 20 | 4 | 0.0015 |
-| ACT + aug vs SmolVLA | 17 | 5 | 0.017 |
-| Diffusion Policy vs SmolVLA | 15 | 19 | 0.61 |
-| ACT + aug vs ACT without augmentation (seed 3000 only) | 21 | 2 | 0.0001 |
+| ACT + aug vs Diffusion Policy | 23 | 2 | 0.00002 |
+| ACT + aug vs SmolVLA | 23 | 3 | 0.0001 |
+| Diffusion Policy vs SmolVLA | 21 | 22 | 1.0 |
+| ACT + aug vs ACT without augmentation (seed 3000 only) | 25 | 0 | < 0.0001 |
 
-So the 52M ACT model trained here is the most reliable of the three. ACT vs SmolVLA is significant on
-its own but borderline once corrected for three comparisons (Bonferroni threshold 0.0167); Diffusion
-Policy and SmolVLA cannot be told apart.
+So the 52M ACT model trained here is the most reliable of the three, significantly better than both
+others even after correcting for three comparisons (Bonferroni threshold 0.0167). Diffusion Policy
+and SmolVLA cannot be told apart.
 
 **Why three seeds.** Diffusion Policy and SmolVLA sample noise at inference; ACT does not (it uses
 the zero latent). With one seed, a single unlucky noise draw is repeated across episodes: Diffusion
-Policy scored 85/100 at seed 3000 (bbq sauce 2/10) and 96 and 98 at the other two seeds. A first
+Policy scored 81/100 at seed 3000 (bbq sauce 1/10) and 96 and 99 at the other two seeds. A first
 Diffusion Policy run that seeded only once at the start reported 97/100; that run was off protocol
 and is superseded by this table ([log](results/log.md)).
 
-Where they fail: almost always tall bottles (bbq sauce, salad dressing, ketchup), as an empty grasp,
-a bottle that slips out after lifting, or a bottle knocked over. None of the policies retries after a
-missed grasp; the demonstrations never show one.
+**Deterministic evaluation.** An earlier version of this table was measured with cuDNN's autotuner on
+(`cudnn.benchmark`), which picks convolution kernels by timing them. Separate runs of the same
+command then differed by about 2 episodes in 100, because tiny numerical differences grow over a
+closed-loop rollout (found when re-running to record videos). Those runs gave ACT 295, SmolVLA 283
+and Diffusion Policy 279 of 300. The evaluator now uses deterministic kernels by default, every
+number in this README was re-measured that way, and two repeat runs (Diffusion Policy, the 10-demo
+ACT model) reproduced all 100 episodes each. The ranking did not change; the margins grew.
+
+Where they fail (checked in the failure videos, `outputs/eval_videos/final_*`):
+
+* ACT fails one episode only (ketchup, init state 11, at every seed): the bottle slips out of the
+  gripper during the carry, and the arm goes on to the basket empty-handed.
+* Diffusion Policy: 11 of its 24 failures are the bbq sauce, knocked over or missed.
+* SmolVLA: spread over seven tasks; the largest group is chocolate pudding (6 of 23), where the arm
+  goes to an empty spot at the far right and never grasps. Others: the soup can jammed in the basket
+  opening, a bottle left across the basket rim or knocked over.
+
+None of the policies retries after a missed grasp; the demonstrations never show one.
 
 ## Rollouts
 
@@ -103,7 +119,7 @@ same weights):
 | SmolVLA reference, MuJoCo 3.3.2 | Open-loop 50 | Replan every 10 |
 | --- | --- | --- |
 | 10 tasks x init states 0-9, seed 2000 | 78/100 | **94/100** (20 fixed, 4 broken, McNemar p = 0.0015) |
-| Held-out: init states 10-19, seed 3000 | | **97/100** (published: 96 %) |
+| Held-out: init states 10-19, seed 3000 | | **97/100** at the time, 93/100 in the final deterministic re-run (published: 96 %) |
 
 The replanning interval was chosen on the first sample and then confirmed on the held-out one.
 
@@ -151,18 +167,21 @@ ACT is deterministic at inference, so one seed suffices).
 
 | Demos per task | Total demos | Dev (25k / 50k steps) | Held-out | Per task (soup, cream cheese, dressing, bbq, ketchup, tomato, butter, milk, pudding, OJ) |
 | --- | --- | --- | --- | --- |
-| 10 | 100 | **75** / 68 | 70/100 | 8, 4, 8, 8, 8, 6, 8, 10, 4, 6 |
-| 20 | 200 | 86 / **91** | 90/100 | 10, 8, 10, 8, 8, 9, 9, 10, 8, 10 |
-| ~45 (all) | 454 | 96 / 95 at 50k / 75k* | 97/100 | 10, 10, 10, 9, 10, 9, 9, 10, 10, 10 |
+| 10 | 100 | **75** / 68 | 74/100 | 8, 4, 7, 8, 9, 7, 10, 10, 5, 6 |
+| 20 | 200 | 86 / **91** | 91/100 | 10, 8, 10, 8, 8, 9, 9, 10, 9, 10 |
+| ~45 (all) | 454 | 96 / 95 at 50k / 75k* | 99/100 | 10, 10, 10, 10, 9, 10, 10, 10, 10, 10 |
 
 \* full-data run of 100k steps (dev 93 at 100k); the 75k checkpoint was the held-out pick.
 
-* Paired on held-out: 10 to 20 demos fixes 24 episodes and breaks 4 (p = 0.0002); 20 to ~45 fixes 10
-  and breaks 3 (p = 0.09). Most of the gain comes from the first 20 demos per task.
+* Paired on held-out: 10 to 20 demos fixes 21 episodes and breaks 4 (p = 0.0009); 20 to ~45 fixes 8
+  and breaks none (p = 0.008). Most of the gain comes from the first 20 demos per task, but the full
+  set is still measurably better.
+* Dev numbers in this table come from the earlier autotuned evaluator; they were only used to pick
+  the checkpoint.
 * With 10 demos the 50k checkpoint is worse than 25k on dev (68 vs 75): it overfits the small set.
   With 20 demos 50k is still better than 25k, so that run may be slightly under-trained.
 * The failures change with data. With ~45 demos, the few failures are tall bottles. With 10, the
-  weak tasks are small boxes: cream cheese and chocolate pudding (4/10 each). In the pudding failure
+  weak tasks are small boxes: cream cheese (4/10) and chocolate pudding (5/10). In the pudding failure
   the box sits behind the ketchup bottle and the arm hovers over the bottle, never reaching past it.
 * Limitation: one training run per size, so part of each difference may be training noise.
 

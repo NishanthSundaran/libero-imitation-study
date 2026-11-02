@@ -15,7 +15,11 @@ Example:
 """
 import argparse
 import json
+import os
 import time
+
+# Deterministic cuBLAS kernels; must be set before CUDA initialises.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 from pathlib import Path
 
 import gymnasium as gym
@@ -81,13 +85,22 @@ def main():
     p.add_argument("--temporal-ensemble", type=float, default=None,
                    help="ACT only: temporal ensembling coefficient (e.g. 0.01); forces n_action_steps=1")
     p.add_argument("--out", required=True)
+    p.add_argument("--fast-nondeterministic", action="store_true",
+                   help="let cuDNN autotune (faster, but results can differ between runs of the same command)")
     p.add_argument("--video-dir", default=None,
                    help="save agent-view mp4s of every failure and of the first success per task")
     args = p.parse_args()
 
     rename_map = json.loads(args.rename_map)
     set_seed(args.seed)
-    torch.backends.cudnn.benchmark = True
+    # Before 2026-11-02 this was cudnn.benchmark = True. The autotuner picks convolution algorithms by
+    # timing, so separate runs of one command could differ by ~2 episodes in 100 for ACT.
+    if args.fast_nondeterministic:
+        torch.backends.cudnn.benchmark = True
+    else:
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms(True, warn_only=True)
 
     env_cfg = LiberoEnvConfig(
         task=args.suite, task_ids=args.task_ids,

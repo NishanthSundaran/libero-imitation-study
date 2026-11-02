@@ -257,3 +257,34 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   fail at full data. Video (pudding, init 12): box hidden behind the ketchup bottle, arm hovers over
   the bottle. Cream cheese (init 10): arm hovers beside the box without closing.
 * One training run per size; differences include training noise.
+
+## Cycle 9: recording the final results, and making evaluation deterministic (2026-11-02)
+
+* Re-ran the final held-out evaluations with video recording on. SmolVLA reproduced all 300
+  episodes exactly, but ACT did not: seed 3000 gave 99 instead of the saved 97 (70 episodes with a
+  different step count), while seeds 3001-3002 matched exactly. Re-running ACT seed 3000 alone gave
+  99 again, identical. Re-running the 10- and 20-demo models gave 68 vs 70 and 88 vs 90, although
+  those had run alone, so sharing the GPU was not the full explanation.
+* Cause: `torch.backends.cudnn.benchmark = True` in `tools/eval_libero.py`. The autotuner picks
+  convolution kernels by timing, so two runs of the same command can use different kernels; the tiny
+  numerical differences grow over a closed-loop rollout. ACT (a ResNet18 convolutional encoder) is the
+  most exposed. Deterministic mode is now the default (`cudnn.benchmark = False`,
+  `cudnn.deterministic`, `torch.use_deterministic_algorithms`, `CUBLAS_WORKSPACE_CONFIG`); the old
+  behaviour is `--fast-nondeterministic`. No measurable slowdown.
+* `scripts/final_heldout.sh` re-measured every reported held-out number one at a time, with failure
+  videos (`outputs/eval_videos/final_*`), into `results/eval/final/`. Two repeat runs (Diffusion
+  Policy seed 3000, stochastic; 10-demo ACT) matched all 100 episodes each.
+* Final, 300 held-out episodes each: ACT + aug **297** (99/99/99), SmolVLA 277 (93/92/92),
+  Diffusion Policy 276 (81/96/99). Paired: ACT vs DP 23 vs 2 (p = 0.00002), ACT vs SmolVLA 23 vs 3
+  (p = 0.0001), DP vs SmolVLA 21 vs 22 (p = 1.0). Same ranking as before; ACT now clears the
+  Bonferroni threshold against both.
+* Demo-count study (seed 3000): 10 / 20 / all = 74 / 91 / 99. 10->20 fixed 21 / broke 4
+  (p = 0.0009); 20->all fixed 8 / broke 0 (p = 0.008, now significant). ACT without augmentation 74.
+* Failure videos (frames checked): ACT's only failure is ketchup, init 11, at every seed (bottle
+  slips out during the carry; `results/videos/ketchup_heldout11_act_aug75k_final_slips.mp4`).
+  Diffusion Policy: 11 of 24 failures are bbq sauce (knocked over or missed). SmolVLA: chocolate
+  pudding 6 of 23 (arm goes to an empty spot at the far right, every seed), soup can jammed in the
+  basket opening, bottle across the basket rim or knocked over, cream cheese missed.
+* Lesson: a closed-loop score is only reproducible if inference is bit-reproducible; check by
+  running the same command twice before trusting a 2-point difference. The earlier conclusions held,
+  but the 98.3 / 94.3 / 93.0 figures were one draw of kernel-selection noise.
