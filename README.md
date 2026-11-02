@@ -4,7 +4,7 @@ How much do demonstrations matter, and how do a vision-language-action model (Sm
 classic imitation-learning policies (ACT, Diffusion Policy) compare when trained on the same LIBERO data?
 Everything runs on a single 6 GB laptop GPU (RTX 3060 Laptop) plus free cloud GPUs for the VLA fine-tune.
 
-Status: work in progress (the demo-count study is running). Every number below was measured.
+Every number below was measured.
 
 ![SmolVLA, ACT and Diffusion Policy on the same held-out episode](results/gifs/three_policies_tomato_sauce.gif)
 
@@ -140,6 +140,29 @@ Failures without augmentation were imprecise grasps on tall objects (milk carton
 gripper beside the carton, bottle released next to the basket or knocked over. Lower training loss
 without better success pointed to overfitting exact pixel positions, which augmentation addresses.
 Side-by-side videos: `results/videos/`.
+
+## How many demonstrations does it need? (ACT + augmentation)
+
+Same recipe, retrained on nested random subsets of the demos (`tools/demo_subset.py`,
+`scripts/demo_count_study.sh`). Checkpoint chosen on dev, scored once on held-out (seed 3000;
+ACT is deterministic at inference, so one seed suffices).
+
+| Demos per task | Total demos | Dev (25k / 50k steps) | Held-out | Per task (soup, cream cheese, dressing, bbq, ketchup, tomato, butter, milk, pudding, OJ) |
+| --- | --- | --- | --- | --- |
+| 10 | 100 | **75** / 68 | 70/100 | 8, 4, 8, 8, 8, 6, 8, 10, 4, 6 |
+| 20 | 200 | 86 / **91** | 90/100 | 10, 8, 10, 8, 8, 9, 9, 10, 8, 10 |
+| ~45 (all) | 454 | 96 / 95 at 50k / 75k* | 97/100 | 10, 10, 10, 9, 10, 9, 9, 10, 10, 10 |
+
+\* full-data run of 100k steps (dev 93 at 100k); the 75k checkpoint was the held-out pick.
+
+* Paired on held-out: 10 to 20 demos fixes 24 episodes and breaks 4 (p = 0.0002); 20 to ~45 fixes 10
+  and breaks 3 (p = 0.09). Most of the gain comes from the first 20 demos per task.
+* With 10 demos the 50k checkpoint is worse than 25k on dev (68 vs 75): it overfits the small set.
+  With 20 demos 50k is still better than 25k, so that run may be slightly under-trained.
+* The failures change with data. With ~45 demos, the few failures are tall bottles. With 10, the
+  weak tasks are small boxes: cream cheese and chocolate pudding (4/10 each). In the pudding failure
+  the box sits behind the ketchup bottle and the arm hovers over the bottle, never reaching past it.
+* Limitation: one training run per size, so part of each difference may be training noise.
 
 ## Setup findings worth knowing
 

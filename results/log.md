@@ -246,3 +246,14 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
   Conclusion: the README headline now reports three seeds; ACT + augmentation is the best policy here.
 * Follow-up idea for DP (after the demo-count study): more denoising steps (DDIM 10 -> 50) or
   larger n_obs_steps, judged on dev with several seeds since DP is stochastic.
+
+### Cycle 8 results
+
+* 10 demos/task: dev 75 (25k) / 68 (50k, overfits); held-out (25k) **70/100**.
+* 20 demos/task: dev 86 (25k) / 91 (50k); held-out (50k) **90/100**.
+* All (~45): held-out 97/100 (same seed). Paired: 10->20 fixed 24 / broke 4 (p = 0.0002);
+  20->all fixed 10 / broke 3 (p = 0.09).
+* Weak tasks at 10 demos: cream cheese 4/10, pudding 4/10 (small boxes), not the tall bottles that
+  fail at full data. Video (pudding, init 12): box hidden behind the ketchup bottle, arm hovers over
+  the bottle. Cream cheese (init 10): arm hovers beside the box without closing.
+* One training run per size; differences include training noise.

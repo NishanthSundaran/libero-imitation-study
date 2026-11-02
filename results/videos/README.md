@@ -18,3 +18,4 @@ GIFs embedded in the main README (`results/gifs/`, 12 fps):
 | `three_policies_tomato_sauce.gif` | Held-out task 5, init 10, seed 3000: SmolVLA (126 steps), ACT + aug 75k (120), Diffusion Policy + aug 50k (116), all succeed |
 | `diffusion_policy_four_tasks.gif` | Diffusion Policy 50k, held-out init 10 of tasks 0, 3, 4, 7 |
 | `augmentation_milk.gif` | GIF of `compare_milk_noaug_vs_aug.mp4` |
+| `pudding_heldout12_demo10_hovers_over_ketchup.mp4` | ACT trained on 10 demos per task: the pudding box sits behind the ketchup bottle; the arm hovers over the bottle until timeout |
