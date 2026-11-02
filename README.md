@@ -11,6 +11,8 @@ Every number below was measured.
 *The same held-out episode (tomato sauce, init state 10, seed 3000) run by all three policies.
 All three finish in 116 to 126 steps.*
 
+A study guide explaining the methods, evaluation and results: [docs/LIBERO_Imitation_Study_Guide.pdf](docs/LIBERO_Imitation_Study_Guide.pdf).
+
 ## Headline result (LIBERO-Object, 300 held-out episodes)
 
 | Policy | Params | Trained by | Seed 3000 | Seed 3001 | Seed 3002 | **Total** |

@@ -78,7 +78,7 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 * Check: every task has a different object set (bddl files), so the scene identifies the task
   without language. Fair comparison with SmolVLA, which is also one model for the suite.
 * Run `act_obj_all_r1`: batch 32, 100k steps (about 47 epochs, task-0 run was 93), lr 1e-5,
-  chunk 50, ckpt every 20k, seed 1000, 2 workers. 2.7 steps/s, about 10 h. GPU 4.6 GB.
+  chunk 50 as planned (run lost before its config could be checked), ckpt every 20k, seed 1000, 2 workers. 2.7 steps/s, about 10 h. GPU 4.6 GB.
 * Planned eval: final checkpoint, 10 tasks x init states 10-19, seed 3000, 256 px, replan 10
   (same episodes as the SmolVLA held-out 97/100).
 * Multi-task ACT finished 2026-10-14 06:35 (100k steps, loss 0.083, ckpts 20k to 100k).
@@ -95,7 +95,7 @@ MuJoCo 3.3.2 unless stated, dataset `lerobot/libero@a1aaacb`.
 
 ## Cycle 3 (restart): one ACT for all 10 LIBERO-Object tasks
 
-* Run `act_obj_all_r2`: same recipe as run 1 (batch 32, 100k steps, lr 1e-5, chunk 50, seed 1000)
+* Run `act_obj_all_r2`: same recipe as run 1 (batch 32, 100k steps, lr 1e-5, chunk 100 per the saved config (an earlier note said 50), seed 1000)
   plus `use_amp=true`: 3.5 steps/s instead of 2.45. Ckpt every 25k; `tools/prune_ckpts.sh` drops
   optimizer state from older checkpoints to save disk.
 * Protocol from here on: dev set = 10 tasks x init states 0-9, seed 2000 (for choosing settings),
